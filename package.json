@@ -4,8 +4,7 @@
   "main": "app.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon app.js",
-    "build": "npx prisma generate"
+    "start": "nodemon app.js"
   },
   "dependencies": {
     "@prisma/client": "^5.9.1",
