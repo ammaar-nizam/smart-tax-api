@@ -19,7 +19,6 @@ function registerAgent(req, res) {
     ).toString(),
   };
 
-  it;
   // Validate user input
   const validationResponse = validator.validate(agent, schemaForAgent);
 
