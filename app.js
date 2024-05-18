@@ -26,6 +26,10 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors())
 
+app.get('/', (req, res) => {
+    res.send("Server is working!")
+})
+
 app.listen(PORT, ()=> {
     console.log(`Backend server is running on port ${PORT}!`);
 });
