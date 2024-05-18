@@ -48,9 +48,9 @@ function registerAgent(req, res) {
                 message: "Agent created successfully.",
                 agent: createdAgent,
               });
-              emailController.sendRegistrationConfirmationEmail(
-                createdAgent.agentUsername
-              );
+              // emailController.sendRegistrationConfirmationEmail(
+              //   createdAgent.agentUsername
+              // );
             })
             .catch((err) => {
               res.status(500).json({
