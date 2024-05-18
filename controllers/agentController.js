@@ -48,9 +48,9 @@ function registerAgent(req, res) {
                 message: "Agent created successfully.",
                 agent: createdAgent,
               });
-              // emailController.sendRegistrationConfirmationEmail(
-              //   createdAgent.agentUsername
-              // );
+              emailController.sendRegistrationConfirmationEmail(
+                createdAgent.agentUsername
+              );
             })
             .catch((err) => {
               res.status(500).json({
@@ -61,6 +61,7 @@ function registerAgent(req, res) {
         }
       })
       .catch((err) => {
+        console.log(err)
         res.status(500).json({
           message: "Unexpected error occured.",
           error: err,
