@@ -1,0 +1,239 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id                         Int                 @id @default(autoincrement())
+  agentName                  String?             @map("agent_name")
+  businessRegistrationNumber String?             @unique @map("business_registration_number")
+  agentAddress               String?             @map("agent_address")
+  agentTelephone             String?             @map("agent_telephone")
+  agentEmail                 String?             @map("agent_email")
+  agentUsername              String?             @unique @map("agent_username")
+  agentPassword              String?             @map("agent_password")
+  purchasers                 Purchaser[]         @relation("PurchaserAgent")
+  receivers                  Receiver[]          @relation("ReceiverAgent")
+  beneficiaries              Beneficiary[]       @relation("BeneficiaryAgent")
+  edtReturns                 EDTReturn[]         @relation("AgentEDTReturns")
+  giftReturns                GiftReturn[]        @relation("AgentGiftReturns")
+  inheritanceReturns         InheritanceReturn[] @relation("AgentInheritanceReturns")
+
+  @@map("agent")
+}
+
+model Purchaser {
+  id                  Int                   @id @default(autoincrement())
+  nic                 String                @unique
+  purchaserName       String?               @map("purchaser_name")
+  purchaserAddress    String?               @map("purchaser_address")
+  dob                 DateTime
+  isFirstProperty     Boolean               @map("is_first_property")
+  isSriLankanResident Boolean               @map("is_sri_lankan_resident")
+  isCompany           Boolean               @map("is_company")
+  agentId             Int                   @map("agent_id")
+  purchaserAgent      Agent                 @relation("PurchaserAgent", fields: [agentId], references: [id])
+  transactions        PurchaseTransaction[] @relation("PurchaserTransaction")
+
+  @@map("purchaser")
+}
+
+model PurchaseTransaction {
+  id                 Int        @id @default(autoincrement())
+  propertyAddress    String?    @unique @map("property_address") 
+  type               String
+  consideration      Decimal    @db.Decimal(10, 2)
+  effectiveDate      DateTime   @map("effective_date")
+  vendorName         String?    @map("vendor_name")
+  vendorNIC          String     @unique @map("vendor_nic")
+  vendorAgentName    String?    @map("vendor_agent_name")
+  vendorAgentAddress String?    @map("vendor_agent_address")
+  purchaserId        Int        @map("purchaser_id")
+  purchaser          Purchaser  @relation("PurchaserTransaction", fields: [purchaserId], references: [id])
+  return             EDTReturn? @relation("EDTTransactionReturns")
+
+  @@map("purchase_transaction")
+}
+
+model EDTReturn {
+  id                 Int                 @id @default(autoincrement())
+  type               String
+  taxDue             Decimal             @map("tax_due") @db.Decimal(10, 2)
+  submitDate         DateTime            @map("submit_date")
+  deadlineDate       DateTime            @map("deadline_date")
+  status             EDTStatus           @default(FILED)
+  transactionId      Int                 @unique @map("transaction_id")
+  agentId            Int                 @map("agent_id")
+  transactionReturns PurchaseTransaction @relation("EDTTransactionReturns", fields: [transactionId], references: [id])
+  agentReturns       Agent               @relation("AgentEDTReturns", fields: [agentId], references: [id])
+  payment            Payment?            @relation("EDTReturnPayment")
+
+  @@map("edt_return")
+}
+
+enum EDTStatus {
+  FILED
+  CANCELLED
+  PAID
+  COMPLETED
+}
+
+model Receiver {
+  id                  Int               @id @default(autoincrement())
+  nic                 String            @unique
+  receiverName        String?           @map("receiver_name")
+  receiverAddress     String?           @map("receiver_address")
+  dob                 DateTime
+  isFirstProperty     Boolean           @map("is_first_property")
+  isSriLankanResident Boolean           @map("is_sri_lankan_resident")
+  isCompany           Boolean           @map("is_company")
+  agentId             Int               @map("agent_id")
+  receiverAgent       Agent             @relation("ReceiverAgent", fields: [agentId], references: [id])
+  transactions        GiftTransaction[] @relation("ReceiverTransaction")
+
+  @@map("receiver")
+}
+
+model GiftTransaction {
+  id              Int         @id @default(autoincrement())
+  propertyAddress String?     @map("property_address")
+  type            String
+  consideration   Decimal     @db.Decimal(10, 2)
+  effectiveDate   DateTime    @map("effective_date")
+  giverName       String?     @map("giver_name")
+  giverNIC        String      @map("giver_nic")
+  receiverId      Int         @map("receiver_id")
+  receiver        Receiver    @relation("ReceiverTransaction", fields: [receiverId], references: [id])
+  return          GiftReturn? @relation("GiftTransactionReturns")
+
+  @@map("gift_transaction")
+}
+
+model GiftReturn {
+  id                 Int             @id @default(autoincrement())
+  type               String
+  taxDue             Decimal         @map("tax_due") @db.Decimal(10, 2)
+  submitDate         DateTime        @map("submit_date")
+  deadlineDate       DateTime        @map("deadline_date")
+  status             GiftTStatus     @default(FILED)
+  transactionId      Int             @unique @map("transaction_id")
+  agentId            Int             @map("agent_id")
+  transactionReturns GiftTransaction @relation("GiftTransactionReturns", fields: [transactionId], references: [id])
+  agentReturns       Agent           @relation("AgentGiftReturns", fields: [agentId], references: [id])
+  payment            Payment?        @relation("GiftReturnPayment")
+
+  @@map("gift_return")
+}
+
+enum GiftTStatus {
+  FILED
+  CANCELLED
+  PAID
+  COMPLETED
+}
+
+model Beneficiary {
+  id                  Int                      @id @default(autoincrement())
+  nic                 String                   @unique
+  beneficiaryName     String?                  @map("beneficiary_name")
+  beneficiaryAddress  String?                  @map("beneficiary_address")
+  dob                 DateTime
+  isFirstProperty     Boolean                  @map("is_first_property")
+  isSriLankanResident Boolean                  @map("is_sri_lankan_resident")
+  isCompany           Boolean                  @map("is_company")
+  agentId             Int                      @map("agent_id")
+  beneficiaryAgent    Agent                    @relation("BeneficiaryAgent", fields: [agentId], references: [id])
+  transactions        InheritanceTransaction[] @relation("BeneficiaryTransaction")
+
+  @@map("beneficiary")
+}
+
+model InheritanceTransaction {
+  id              Int                @id @default(autoincrement())
+  propertyAddress String?            @map("property_address")
+  type            String
+  consideration   Decimal            @db.Decimal(10, 2)
+  effectiveDate   DateTime           @map("effective_date")
+  decedentName    String?            @map("decedent_name")
+  decedentNIC     String             @map("decedent_nic")
+  beneficiaryId   Int                @map("beneficiary_id")
+  beneficiary     Beneficiary        @relation("BeneficiaryTransaction", fields: [beneficiaryId], references: [id])
+  return          InheritanceReturn? @relation("InheritanceTransactionReturns")
+
+  @@map("inheritance_transaction")
+}
+
+model InheritanceReturn {
+  id                 Int                    @id @default(autoincrement())
+  type               String
+  taxDue             Decimal                @map("tax_due") @db.Decimal(10, 2)
+  submitDate         DateTime               @map("submit_date")
+  deadlineDate       DateTime               @map("deadline_date")
+  status             InheritanceTStatus     @default(FILED)
+  transactionId      Int                    @unique @map("transaction_id")
+  agentId            Int                    @map("agent_id")
+  transactionReturns InheritanceTransaction @relation("InheritanceTransactionReturns", fields: [transactionId], references: [id])
+  agentReturns       Agent                  @relation("AgentInheritanceReturns", fields: [agentId], references: [id])
+  payment            Payment?               @relation("InheritanceReturnPayment")
+
+  @@map("inheritance_return")
+}
+
+enum InheritanceTStatus {
+  FILED
+  CANCELLED
+  PAID
+  COMPLETED
+}
+
+model Payment {
+  id                       Int               @id @default(autoincrement())
+  amount                   Decimal           @db.Decimal(10, 2)
+  status                   String
+  paidDate                 DateTime          @map("paid_date")
+  edtReturnId              Int               @unique @map("edt_return_id")
+  edtReturnPayment         EDTReturn         @relation("EDTReturnPayment", fields: [edtReturnId], references: [id])
+  giftReturnId             Int               @unique @map("gift_return_id")
+  giftReturnPayment        GiftReturn        @relation("GiftReturnPayment", fields: [giftReturnId], references: [id])
+  inheritanceReturnId      Int               @unique @map("inheritance_return_id")
+  inheritanceReturnPayment InheritanceReturn @relation("InheritanceReturnPayment", fields: [inheritanceReturnId], references: [id])
+  penalty                  Penalty?          @relation("PaymentPenalty")
+
+  @@map("payment")
+}
+
+model Penalty {
+  id             Int      @id @default(autoincrement())
+  reason         String?
+  amount         Decimal  @db.Decimal(10, 2)
+  imposedDate    DateTime @map("imposed_date")
+  status         String
+  paymentId      Int      @unique @map("payment_id")
+  paymentPenalty Payment  @relation("PaymentPenalty", fields: [paymentId], references: [id])
+
+  @@map("penalty")
+}
+
+// Define a Feedback model to represent feedback entries
+model Feedback {
+  id       Int            @id @default(autoincrement())
+  name     String
+  email    String
+  feedback String
+  rating   Int
+  status   FeedbackStatus @default(PENDING)
+  response String? // Optional column to store response
+
+  @@map("feedback")
+}
+
+// Define an enum for the status of the feedback
+enum FeedbackStatus {
+  PENDING // Feedback has not been responded to yet
+  RESPONDED // Feedback has been responded to
+}
