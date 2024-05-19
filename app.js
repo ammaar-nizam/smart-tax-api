@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-  (request, response) => {
+  async (request, response) => {
     let event = request.body;
     if (endpointSecret) {
       // Get the signature sent by Stripe
@@ -50,7 +50,7 @@ app.post(
       case "checkout.session.completed":
         const session = event.data.object;
         try {
-          prisma.$executeRaw`UPDATE edt_return SET status = 'PAID' WHERE id = ${parseInt(
+            await prisma.$executeRaw`UPDATE edt_return SET status = 'PAID' WHERE id = ${parseInt(
             session.metadata.edtReturnId
           )}`;
 
