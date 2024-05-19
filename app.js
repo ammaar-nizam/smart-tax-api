@@ -50,6 +50,7 @@ app.post(
       case "checkout.session.completed":
         const session = event.data.object;
         try {
+          console.log(session.metadata.edtReturnId);
           prisma.eDTReturn
             .update({
               where: { id: parseInt(session.metadata.edtReturnId) },
