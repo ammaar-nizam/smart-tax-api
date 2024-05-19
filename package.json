@@ -23,7 +23,8 @@
     "nodemailer": "^6.9.13",
     "nodemon": "^3.0.3",
     "prisma": "^5.9.1",
-    "stripe": "^15.7.0"
+    "stripe": "^15.7.0",
+    "stripe-cli": "^0.1.0"
   },
   "devDependencies": {
     "chai": "^5.1.1",

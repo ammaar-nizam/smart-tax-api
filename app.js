@@ -69,9 +69,9 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
   
     // Handle the event
     switch (event.type) {
-      case 'checkout.session.completed':
-        const session = event.data.object;
-        console.log(`Payment of ${session.amount} was successful!`);
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object;
+        console.log(`Payment of ${paymentIntent.amount} was successful!`);
         // Then define and call a method to handle the successful payment intent.
         // handlePaymentIntentSucceeded(paymentIntent);
         break;
