@@ -36,6 +36,9 @@ async function createCheckoutSession(req, res) {
       ],
       mode: "payment",
       customer_email: req.body.agentEmail,
+      metadata: {
+        edtReturnId: edtReturn.id.toString(), // Add edtReturnId to metadata
+      },
       billing_address_collection: 'auto',
       success_url: `${process.env.WEBSITE_DOMAIN}?success=true`,
       cancel_url: `${process.env.WEBSITE_DOMAIN}?canceled=true`,
