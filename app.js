@@ -47,11 +47,11 @@ app.post(
 
     // Handle the event
     switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntent = event.data.object;
+      case "session.checkout.completed":
+        const session = event.data.object;
         try {
           prisma.eDTReturn.update({
-            where: { id: parseInt(paymentIntent.metadata.edtReturnId) },
+            where: { id: parseInt(session.metadata.edtReturnId) },
             data: { status: EDTStatus.PAID },
           });
 
@@ -64,8 +64,8 @@ app.post(
           });
         }
         break;
-      case "session.checkout.completed":
-        const session = event.data.object;
+      case "payment_intent.succeeded":
+        const paymentIntent = event.data.object;
         break;
       default:
         // Unexpected event type
