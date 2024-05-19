@@ -55,10 +55,10 @@ app.post(
               data: { status: "PAID" },
             });
       
-            res.status(200).json({ received: true });
+            response.status(200).json({ received: true });
           } catch (err) {
             console.log(err);
-            res.status(500).json({
+            response.status(500).json({
               message: "Error updating EDT Return status",
               error: err,
             });
