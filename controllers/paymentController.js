@@ -4,6 +4,7 @@ const prisma = require("../config/prismaConfig");
 // Take to Checkout Page
 async function createCheckoutSession(req, res) {
   try {
+    console.log(req.body.returnId)
     const edtReturn = await prisma.eDTReturn.findUnique({
       where: { id: parseInt(req.body.returnId) },
     });

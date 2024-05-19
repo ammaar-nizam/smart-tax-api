@@ -72,6 +72,7 @@ function registerAgent(req, res) {
 
 // Logging in as an agent
 function loginAsAgent(req, res) {
+  console.log(req.body.agentUsername)
   prisma.agent
     .findUnique({ where: { agentUsername: req.body.agentUsername } })
     .then((currentAgent) => {
@@ -109,6 +110,7 @@ function loginAsAgent(req, res) {
       }
     })
     .catch((err) => {
+      console.log(err)
       res.status(500).json({
         message: "Error logging in as agent.",
         error: err,
