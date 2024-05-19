@@ -1,5 +1,6 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const prisma = require("./config/prismaConfig");
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
@@ -46,15 +47,8 @@ app.post(
 
     // Handle the event
     switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntent = event.data.object;
-        console.log(`Payment of ${paymentIntent.amount} was successful!`);
-        // Then define and call a method to handle the successful payment intent.
-        // handlePaymentIntentSucceeded(paymentIntent);
-        break;
       case "checkout.session.completed":
         const session = event.data.object;
-        console.log(`Payment of ${session.amount} was successful!`);
         try {
             prisma.eDTReturn.update({
               where: { id: parseInt(session.metadata.edtReturnId) },
