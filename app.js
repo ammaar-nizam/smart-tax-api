@@ -24,32 +24,6 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors());
-
-app.get("/", (req, res) => {
-  res.send("Server is working!");
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend server is running on port ${PORT}!`);
-});
-
-app.use("/api/agents", agentRoute);
-app.use("/api/feedbacks", feedbackRoute);
-app.use("/api/beneficiaries", beneficiaryRoute);
-app.use("/api/purchasers", purchaserRoute);
-app.use("/api/receivers", receiverRoute);
-app.use("/api/purchase-transactions", purchaseTransactionRoute);
-app.use("/api/gift-transactions", giftTransactionRoute);
-app.use("/api/inheritance-transactions", inheritanceTransactionRoute);
-app.use("/api/edt-returns", edtReturnRoute);
-app.use("/api/gift-returns", giftReturnRoute);
-app.use("/api/inheritance-returns", inheritanceReturnRoute);
-app.use("/api/payments", paymentRoute);
-app.use("/api/penalties", penaltyRoute);
-
 app.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
     let event = request.body;
     if (endpointSecret) {
@@ -83,3 +57,31 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
     // Return a 200 response to acknowledge receipt of the event
     response.send();
   });
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors());
+
+app.get("/", (req, res) => {
+  res.send("Server is working!");
+});
+
+app.listen(PORT, () => {
+  console.log(`Backend server is running on port ${PORT}!`);
+});
+
+app.use("/api/agents", agentRoute);
+app.use("/api/feedbacks", feedbackRoute);
+app.use("/api/beneficiaries", beneficiaryRoute);
+app.use("/api/purchasers", purchaserRoute);
+app.use("/api/receivers", receiverRoute);
+app.use("/api/purchase-transactions", purchaseTransactionRoute);
+app.use("/api/gift-transactions", giftTransactionRoute);
+app.use("/api/inheritance-transactions", inheritanceTransactionRoute);
+app.use("/api/edt-returns", edtReturnRoute);
+app.use("/api/gift-returns", giftReturnRoute);
+app.use("/api/inheritance-returns", inheritanceReturnRoute);
+app.use("/api/payments", paymentRoute);
+app.use("/api/penalties", penaltyRoute);
+
+
