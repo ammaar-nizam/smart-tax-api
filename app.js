@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const cors = require("cors");
 
 const agentRoute = require('./routes/agentRoute');
@@ -30,6 +31,8 @@ app.get('/', (req, res) => {
     res.send("Server is working!")
 })
 
+// Middleware to parse raw request body for webhook
+app.use('/api/payments/webhook', bodyParser.raw({ type: 'application/json' }));
 const paymentController = require('./controllers/paymentController')
 app.post('/api/payments/webhook', paymentController.handleWebhook); // Mount webhook endpoint
 
