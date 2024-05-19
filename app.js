@@ -48,7 +48,7 @@ app.post(
 
     // Handle the event
     switch (event.type) {
-      case "session.checkout.completed":
+      case "checkout.session.completed":
         const session = event.data.object;
         try {
           prisma.eDTReturn.update({
