@@ -52,7 +52,7 @@ app.post(
         try {
           prisma.eDTReturn.update({
             where: { id: parseInt(paymentIntent.metadata.edtReturnId) },
-            data: { status: "PAID" },
+            data: { status: EDTStatus.PAID },
           });
 
           response.status(200).json({ received: true });
