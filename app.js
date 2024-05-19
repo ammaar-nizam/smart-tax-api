@@ -2,9 +2,9 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const { Buffer } = require("buffer");
-const cors = require("cors");
 
 const agentRoute = require("./routes/agentRoute");
 const feedbackRoute = require("./routes/feedbackRoute");
@@ -29,7 +29,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Server is working!");
