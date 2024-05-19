@@ -1,6 +1,7 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const prisma = require("./config/prismaConfig");
+const { PrismaClient, EDTStatus } = require('@prisma/client');
+const prisma = new PrismaClient();
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
