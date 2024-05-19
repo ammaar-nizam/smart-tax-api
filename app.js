@@ -21,7 +21,7 @@ const paymentRoute = require("./routes/paymentRoute");
 const penaltyRoute = require("./routes/penaltyRoute");
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const prisma = require("../config/prismaConfig");
+const prisma = require("./config/prismaConfig");
 
 dotenv.config();
 
