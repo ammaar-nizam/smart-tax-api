@@ -50,6 +50,47 @@ function getEDTReturnById(req, res) {
     });
 }
 
+function getEDTReturnsFiled(req, res) {
+  prisma.eDTReturn
+    .findMany({ where: { status: "FILED" } })
+    .then((data) => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "No EDT Returns found with status 'Filed'.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error retrieving EDT Returns with status 'Filed'.",
+        error: err,
+      });
+    });
+}
+
+function getEDTReturnsPaid(req, res) {
+  prisma.eDTReturn
+    .findMany({ where: { status: "PAID" } })
+    .then((data) => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "No EDT Returns found with status 'Paid'.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error retrieving EDT Returns with status 'Paid'.",
+        error: err,
+      });
+    });
+}
+
+
 // Get all EDT Returns
 function getAllEDTReturns(req, res) {
   prisma.eDTReturn
@@ -126,6 +167,8 @@ function deleteEDTReturnById(req, res) {
 module.exports = {
   createEDTReturn,
   getEDTReturnById,
+  getEDTReturnsFiled,
+  getEDTReturnsPaid,
   getAllEDTReturns,
   updateEDTReturnById,
   deleteEDTReturnById,

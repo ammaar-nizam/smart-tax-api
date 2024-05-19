@@ -14,16 +14,7 @@ function createReceiver(req, res) {
     agentId: req.body.agentId,
   };
 
-  // Validate user input
-  const validationResponse = validator.validate(receiver, schemaForReceiver);
-
-  if (validationResponse !== true) {
-    res.status(400).json({
-      message: "Validation failed.",
-      errors: validationResponse,
-    });
-  } else {
-    prisma.receiver
+  prisma.receiver
       .findUnique({
         where: {
           nic: req.body.nic,
@@ -57,7 +48,6 @@ function createReceiver(req, res) {
           error: err,
         });
       });
-  }
 }
 
 // Get receiver by Id

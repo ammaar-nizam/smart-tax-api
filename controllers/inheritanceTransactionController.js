@@ -7,46 +7,49 @@ function createInheritanceTransaction(req, res) {
     type: req.body.type,
     consideration: req.body.consideration,
     effectiveDate: req.body.effectiveDate,
-    decendentName: req.body.decendentName,
-    decendentNIC: req.body.decendentNIC,
+    decedentName: req.body.decedentName,
+    decedentNIC: req.body.decedentName,
     beneficiaryId: req.body.beneficiaryId,
   };
 
   prisma.inheritanceTransaction
-      .findUnique({
-        where: {
-          nic: req.body.nic,
-        },
-      })
-      .then((data) => {
-        if (data) {
-          res.status(409).json({
-            message:
-              "An inheritanceTransaction already exists.",
-          });
-        } else {
-          prisma.inheritanceTransaction
-            .create({ data: inheritanceTransaction })
-            .then((createdInheritanceTransaction) => {
-              res.status(201).json({
-                message: "InheritanceTransaction created successfully.",
-                inheritanceTransaction: createdInheritanceTransaction,
-              });
-            })
-            .catch((err) => {
-              res.status(500).json({
-                message: "Error creating the inheritanceTransaction.",
-                error: err,
-              });
-            });
-        }
-      })
-      .catch((err) => {
-        res.status(500).json({
-          message: "Unexpected error occured.",
-          error: err,
+    .findFirst({
+      where: {
+        AND: [
+          { propertyAddress: req.body.propertyAddress },
+          { effectiveDate: req.body.effectiveDate },
+        ],
+      },
+    })
+    .then((data) => {
+      if (data) {
+        res.status(409).json({
+          message: "An inheritanceTransaction already exists.",
         });
+      } else {
+        prisma.inheritanceTransaction
+          .create({ data: inheritanceTransaction })
+          .then((createdInheritanceTransaction) => {
+            res.status(201).json({
+              message: "InheritanceTransaction created successfully.",
+              inheritanceTransaction: createdInheritanceTransaction,
+            });
+          })
+          .catch((err) => {
+            console.log(err)
+            res.status(500).json({
+              message: "Error creating the inheritanceTransaction.",
+              error: err,
+            });
+          });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Unexpected error occured.",
+        error: err,
       });
+    });
 }
 
 // Get inheritanceTransaction by Id
@@ -95,8 +98,8 @@ function updateInheritanceTransactionById(req, res) {
         type: req.body.type,
         consideration: req.body.consideration,
         effectiveDate: req.body.effectiveDate,
-        decendentName: req.body.decendentName,
-        decendentNIC: req.body.decendentNIC,
+        decedentName: req.body.decedentName,
+        decedentName: req.body.decedentName,
         beneficiaryId: req.body.beneficiaryId,
       },
     })
@@ -150,7 +153,10 @@ function getInheritanceTransactionId(req, res) {
   prisma.inheritanceTransaction
     .findFirst({
       where: {
-        AND: [{ propertyAddress: propertyAddress }, { decedentNIC: decedentNIC }],
+        AND: [
+          { propertyAddress: propertyAddress },
+          { decedentNIC: decedentNIC },
+        ],
       },
     })
     .then((inheritanceTransaction) => {
@@ -179,5 +185,5 @@ module.exports = {
   getAllInheritanceTransactions,
   updateInheritanceTransactionById,
   deleteInheritanceTransactionById,
-  getInheritanceTransactionId
+  getInheritanceTransactionId,
 };

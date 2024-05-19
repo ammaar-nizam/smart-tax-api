@@ -12,50 +12,44 @@ function createGiftTransaction(req, res) {
     receiverId: req.body.receiverId,
   };
 
-  // Validate user input
-  const validationResponse = validator.validate(giftTransaction, schemaForGiftTransaction);
-
-  if (validationResponse !== true) {
-    res.status(400).json({
-      message: "Validation failed.",
-      errors: validationResponse,
-    });
-  } else {
-    prisma.giftTransaction
-      .findUnique({
-        where: {
-          nic: req.body.nic,
-        },
-      })
-      .then((data) => {
-        if (data) {
-          res.status(409).json({
-            message: "A gift transaction already exists.",
-          });
-        } else {
-          prisma.giftTransaction
-            .create({ data: giftTransaction })
-            .then((createdGiftTransaction) => {
-              res.status(201).json({
-                message: "Gift transaction created successfully.",
-                giftTransaction: createdGiftTransaction,
-              });
-            })
-            .catch((err) => {
-              res.status(500).json({
-                message: "Error creating the gift transaction.",
-                error: err,
-              });
-            });
-        }
-      })
-      .catch((err) => {
-        res.status(500).json({
-          message: "Unexpected error occured.",
-          error: err,
+  prisma.giftTransaction
+    .findFirst({
+      where: {
+        AND: [
+          { propertyAddress: req.body.propertyAddress },
+          { effectiveDate: req.body.effectiveDate },
+        ],
+      },
+    })
+    .then((data) => {
+      if (data) {
+        res.status(409).json({
+          message: "A gift transaction already exists.",
         });
+      } else {
+        prisma.giftTransaction
+          .create({ data: giftTransaction })
+          .then((createdGiftTransaction) => {
+            res.status(201).json({
+              message: "Gift transaction created successfully.",
+              giftTransaction: createdGiftTransaction,
+            });
+          })
+          .catch((err) => {
+            res.status(500).json({
+              message: "Error creating the gift transaction.",
+              error: err,
+            });
+          });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({
+        message: "Unexpected error occured.",
+        error: err,
       });
-  }
+    });
 }
 
 // Get giftTransaction by Id
@@ -87,7 +81,7 @@ function getAllGiftTransactions(req, res) {
       res.status(200).json(data);
     })
     .catch((err) => {
-      console.log(err)
+      console.log(err);
       res.status(500).json({
         message: "Error retrieving all giftTransactions.",
         error: err,
@@ -102,12 +96,12 @@ function updateGiftTransactionById(req, res) {
       where: { id: parseInt(req.params.id) },
       data: {
         propertyAddress: req.body.propertyAddress,
-    type: req.body.type,
-    consideration: req.body.consideration,
-    effectiveDate: req.body.effectiveDate,
-    giverName: req.body.giverName,
-    giverNIC: req.body.giverNIC,
-    receiverId: req.body.receiverId,
+        type: req.body.type,
+        consideration: req.body.consideration,
+        effectiveDate: req.body.effectiveDate,
+        giverName: req.body.giverName,
+        giverNIC: req.body.giverNIC,
+        receiverId: req.body.receiverId,
       },
     })
     .then((updatedGiftTransaction) => {
@@ -190,5 +184,5 @@ module.exports = {
   getAllGiftTransactions,
   updateGiftTransactionById,
   deleteGiftTransactionById,
-  getGiftTransactionId
+  getGiftTransactionId,
 };

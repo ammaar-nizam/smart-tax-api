@@ -13,36 +13,16 @@ function createInheritanceReturn(req, res) {
   };
 
   prisma.inheritanceReturn
-    .findUnique({
-      where: {
-        nic: req.body.nic,
-      },
-    })
-    .then((data) => {
-      if (data) {
-        res.status(409).json({
-          message: "An inheritance return already exists with the same NIC.",
-        });
-      } else {
-        prisma.inheritanceReturn
-          .create({ data: inheritanceReturn })
-          .then((createdInheritanceReturn) => {
-            res.status(201).json({
-              message: "Inheritance return created successfully.",
-              inheritanceReturn: createdInheritanceReturn,
-            });
-          })
-          .catch((err) => {
-            res.status(500).json({
-              message: "Error creating the inheritance return.",
-              error: err,
-            });
-          });
-      }
+    .create({ data: inheritanceReturn })
+    .then((createdInheritanceReturn) => {
+      res.status(201).json({
+        message: "Inheritance return created successfully.",
+        inheritanceReturn: createdInheritanceReturn,
+      });
     })
     .catch((err) => {
       res.status(500).json({
-        message: "Unexpected error occured.",
+        message: "Error creating the inheritance return.",
         error: err,
       });
     });
@@ -64,6 +44,46 @@ function getInheritanceReturnById(req, res) {
     .catch((err) => {
       res.status(500).json({
         message: "Error retrieving the inheritance return.",
+        error: err,
+      });
+    });
+}
+
+function getInheritanceTaxReturnsFiled(req, res) {
+  prisma.inheritanceReturn
+    .findMany({ where: { status: "FILED" } })
+    .then((data) => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "No InheritanceTax Returns found with status 'Filed'.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error retrieving InheritanceTax Returns with status 'Filed'.",
+        error: err,
+      });
+    });
+}
+
+function getInheritanceTaxReturnsPaid(req, res) {
+  prisma.inheritanceReturn
+    .findMany({ where: { status: "PAID" } })
+    .then((data) => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "No InheritanceTax Returns found with status 'Paid'.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error retrieving InheritanceTax Returns with status 'Paid'.",
         error: err,
       });
     });
@@ -145,6 +165,8 @@ function deleteInheritanceReturnById(req, res) {
 module.exports = {
   createInheritanceReturn,
   getInheritanceReturnById,
+  getInheritanceTaxReturnsFiled,
+  getInheritanceTaxReturnsPaid,
   getAllInheritanceReturns,
   updateInheritanceReturnById,
   deleteInheritanceReturnById,

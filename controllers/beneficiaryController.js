@@ -1,5 +1,4 @@
 const prisma = require("../config/prismaConfig");
-const { validator, schemaForBeneficiary } = require("../utils/validation");
 
 // Create a Beneficiary
 function createBeneficiary(req, res) {
@@ -14,53 +13,40 @@ function createBeneficiary(req, res) {
     agentId: req.body.agentId,
   };
 
-  // Validate user input
-  const validationResponse = validator.validate(
-    beneficiary,
-    schemaForBeneficiary
-  );
-
-  if (validationResponse !== true) {
-    res.status(400).json({
-      message: "Validation failed.",
-      errors: validationResponse,
-    });
-  } else {
-    prisma.beneficiary
-      .findUnique({
-        where: {
-          nic: req.body.nic,
-        },
-      })
-      .then((data) => {
-        if (data) {
-          res.status(409).json({
-            message: "An beneficiary already exists with the same NIC.",
-          });
-        } else {
-          prisma.beneficiary
-            .create({ data: beneficiary })
-            .then((createdBeneficiary) => {
-              res.status(201).json({
-                message: "Beneficiary created successfully.",
-                beneficiary: createdBeneficiary,
-              });
-            })
-            .catch((err) => {
-              res.status(500).json({
-                message: "Error creating the beneficiary.",
-                error: err,
-              });
-            });
-        }
-      })
-      .catch((err) => {
-        res.status(500).json({
-          message: "Unexpected error occured.",
-          error: err,
-        });
+  prisma.beneficiary
+  .findUnique({
+    where: {
+      nic: req.body.nic,
+    },
+  })
+  .then((data) => {
+    if (data) {
+      res.status(409).json({
+        message: "An beneficiary already exists with the same NIC.",
       });
-  }
+    } else {
+      prisma.beneficiary
+        .create({ data: beneficiary })
+        .then((createdBeneficiary) => {
+          res.status(201).json({
+            message: "Beneficiary created successfully.",
+            beneficiary: createdBeneficiary,
+          });
+        })
+        .catch((err) => {
+          res.status(500).json({
+            message: "Error creating the beneficiary.",
+            error: err,
+          });
+        });
+    }
+  })
+  .catch((err) => {
+    res.status(500).json({
+      message: "Unexpected error occured.",
+      error: err,
+    });
+  });
 }
 
 // Get beneficiary by Id

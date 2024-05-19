@@ -3,10 +3,12 @@ const authorization = require('../middleware/authorization');
 
 const router = require("express").Router();
 
-router.post('/create', edtReturnController.createEDTReturn, authorization.verifyToken);
-router.get('/:id', edtReturnController.getEDTReturnById, authorization.verifyToken);
-router.get('/', edtReturnController.getAllEDTReturns, authorization.verifyToken);
-router.patch('/:id', edtReturnController.updateEDTReturnById, authorization.verifyToken);
-router.delete('/:id', edtReturnController.deleteEDTReturnById, authorization.verifyToken);
+router.post('/create', edtReturnController.createEDTReturn);
+router.get('/filed', edtReturnController.getEDTReturnsFiled);
+router.get('/paid', edtReturnController.getEDTReturnsPaid);
+router.get('/:id', edtReturnController.getEDTReturnById);
+router.get('/', edtReturnController.getAllEDTReturns);
+router.patch('/:id', edtReturnController.updateEDTReturnById);
+router.delete('/:id', edtReturnController.deleteEDTReturnById);
 
 module.exports = router;

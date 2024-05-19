@@ -13,39 +13,19 @@ function createGiftReturn(req, res) {
   };
 
   prisma.giftReturn
-      .findUnique({
-        where: {
-          nic: req.body.nic,
-        },
-      })
-      .then((data) => {
-        if (data) {
-          res.status(409).json({
-            message: "An giftReturn already exists with the same NIC.",
-          });
-        } else {
-          prisma.giftReturn
-            .create({ data: giftReturn })
-            .then((createdGiftReturn) => {
-              res.status(201).json({
-                message: "GiftReturn created successfully.",
-                giftReturn: createdGiftReturn,
-              });
-            })
-            .catch((err) => {
-              res.status(500).json({
-                message: "Error creating the giftReturn.",
-                error: err,
-              });
-            });
-        }
-      })
-      .catch((err) => {
-        res.status(500).json({
-          message: "Unexpected error occured.",
-          error: err,
-        });
+    .create({ data: giftReturn })
+    .then((createdGiftReturn) => {
+      res.status(201).json({
+        message: "GiftReturn created successfully.",
+        giftReturn: createdGiftReturn,
       });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error creating the giftReturn.",
+        error: err,
+      });
+    });
 }
 
 // Get giftReturn by Id
@@ -64,6 +44,46 @@ function getGiftReturnById(req, res) {
     .catch((err) => {
       res.status(500).json({
         message: "Error retrieving the Gift Return.",
+        error: err,
+      });
+    });
+}
+
+function getGiftTaxReturnsFiled(req, res) {
+  prisma.giftReturn
+    .findMany({ where: { status: "FILED" } })
+    .then((data) => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "No Gift Tax Returns found with status 'Filed'.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error retrieving Gift Tax Returns with status 'Filed'.",
+        error: err,
+      });
+    });
+}
+
+function getGiftTaxReturnsPaid(req, res) {
+  prisma.giftReturn
+    .findMany({ where: { status: "PAID" } })
+    .then((data) => {
+      if (data) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json({
+          message: "No Gift Tax Returns found with status 'Paid'.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Error retrieving Gift Tax Returns with status 'Paid'.",
         error: err,
       });
     });
@@ -145,6 +165,8 @@ function deleteGiftReturnById(req, res) {
 module.exports = {
   createGiftReturn,
   getGiftReturnById,
+  getGiftTaxReturnsFiled,
+  getGiftTaxReturnsPaid,
   getAllGiftReturns,
   updateGiftReturnById,
   deleteGiftReturnById,
