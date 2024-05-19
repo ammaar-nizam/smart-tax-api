@@ -1,6 +1,6 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const prisma = require("../config/prismaConfig");
-const { raw } = require("body-parser");
+const bodyParser = require('body-parser');
 
 // Take to Checkout Page
 async function createCheckoutSession(req, res) {
@@ -51,44 +51,43 @@ async function createCheckoutSession(req, res) {
 async function handleWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
 
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      raw({ type: 'application/json' })(req, res),
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error('Webhook signature verification failed.', err);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-
-    try {
-      // Extract the metadata
-      const edtReturnId = session.metadata.edtReturnId;
-      console.log(`Updating EDT Return ID: ${edtReturnId} to PAID`);
-
-      // Update the eDTReturn status
-      await prisma.eDTReturn.update({
-        where: { id: parseInt(edtReturnId) },
-        data: { status: 'PAID' },
-      });
-
-      res.status(200).json({ received: true });
-    } catch (err) {
-      console.error('Error updating EDT Return status', err);
-      res.status(500).json({
-        message: 'Error updating EDT Return status',
-        error: err,
-      });
+  bodyParser.raw({ type: 'application/json' })(req, res, (err) => {
+    if (err) {
+      return res.status(400).send(`Webhook Error: ${err.message}`);
     }
-  } else {
-    console.log(`Unhandled event type: ${event.type}`);
-    res.status(400).json({ message: 'Unhandled event type' });
-  }
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object;
+
+      try {
+        prisma.eDTReturn.update({
+          where: { id: parseInt(paymentIntent.metadata.edtReturnId) },
+          data: { status: "Paid" },
+        });
+
+        res.status(200).json({ received: true });
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({
+          message: "Error updating EDT Return status",
+          error: err,
+        });
+      }
+    } else {
+      res.status(400).json({ message: "Unhandled event type" });
+    }
+  });
 }
 
 module.exports = {
