@@ -46,39 +46,6 @@ async function createCheckoutSession(req, res) {
   }
 }
 
-// Create a Payment Intent
-async function createPaymentIntent(req, res) {
-  const { edtReturnId } = req.params.id;
-
-  try {
-    const edtReturn = await prisma.eDTReturn.findUnique({
-      where: { id: parseInt(edtReturnId) },
-    });
-
-    if (!edtReturn) {
-      return res.status(404).json({
-        message: "EDT Return not found",
-      });
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: edtReturn.taxDue * 100, // Stripe amount is in cents
-      currency: "usd",
-      metadata: { edtReturnId: edtReturn.id.toString() },
-    });
-
-    res.status(201).json({
-      clientSecret: paymentIntent.client_secret,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      message: "Error creating payment intent",
-      error: err,
-    });
-  }
-}
-
 // Handle webhook event
 async function handleWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
@@ -125,6 +92,5 @@ async function handleWebhook(req, res) {
 
 module.exports = {
   createCheckoutSession,
-  createPaymentIntent,
   handleWebhook,
 };
