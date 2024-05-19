@@ -1,3 +1,5 @@
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
@@ -47,3 +49,37 @@ app.use("/api/gift-returns", giftReturnRoute);
 app.use("/api/inheritance-returns", inheritanceReturnRoute);
 app.use("/api/payments", paymentRoute);
 app.use("/api/penalties", penaltyRoute);
+
+app.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
+    let event = request.body;
+    if (endpointSecret) {
+      // Get the signature sent by Stripe
+      const signature = request.headers['stripe-signature'];
+      try {
+        event = stripe.webhooks.constructEvent(
+          request.body,
+          signature,
+          endpointSecret
+        );
+      } catch (err) {
+        console.log(`⚠️  Webhook signature verification failed.`, err.message);
+        return response.sendStatus(400);
+      }
+    }
+  
+    // Handle the event
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object;
+        console.log(`Payment of ${session.amount} was successful!`);
+        // Then define and call a method to handle the successful payment intent.
+        // handlePaymentIntentSucceeded(paymentIntent);
+        break;
+      default:
+        // Unexpected event type
+        console.log(`Unhandled event type ${event.type}.`);
+    }
+  
+    // Return a 200 response to acknowledge receipt of the event
+    response.send();
+  });

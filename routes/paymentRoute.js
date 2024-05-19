@@ -5,6 +5,6 @@ const express = require('express');
 const router = express.Router();
 
 router.post('/create-checkout-session', paymentController.createCheckoutSession);
-router.post('/webhook', express.raw({type: 'application/json'}), paymentController.handleWebhook);
+// router.post('/webhook', express.raw({type: 'application/json'}), paymentController.handleWebhook);
 
 module.exports = router;
