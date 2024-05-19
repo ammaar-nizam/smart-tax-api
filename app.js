@@ -1,6 +1,5 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const { PrismaClient, EDTStatus } = require('@prisma/client');
+const prisma = require("./config/prismaConfig");
 const prisma = new PrismaClient();
 const express = require("express");
 const app = express();
@@ -51,10 +50,29 @@ app.post(
       case "checkout.session.completed":
         const session = event.data.object;
         try {
-          prisma.eDTReturn.update({
-            where: { id: parseInt(session.metadata.edtReturnId) },
-            data: { status: EDTStatus.PAID },
-          });
+          prisma.eDTReturn
+            .update({
+              where: { id: parseInt(session.metadata.edtReturnId) },
+              data: { status: "PAID" },
+            })
+            .then((updatedReturn) => {
+              if (updatedReturn) {
+                res.status(200).json({
+                  message: "Return updated successfully.",
+                  return: updatedReturn,
+                });
+              } else {
+                res.status(404).json({
+                  message: "Return not found",
+                });
+              }
+            })
+            .catch((err) => {
+              res.status(500).json({
+                message: "Error updating the return.",
+                error: err,
+              });
+            });
 
           response.status(200).json({ received: true });
         } catch (err) {
