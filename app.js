@@ -50,30 +50,9 @@ app.post(
       case "checkout.session.completed":
         const session = event.data.object;
         try {
-          console.log(session.metadata.edtReturnId);
-          prisma.eDTReturn
-            .update({
-              where: { id: parseInt(session.metadata.edtReturnId) },
-              data: { status: "PAID" },
-            })
-            .then((updatedReturn) => {
-              if (updatedReturn) {
-                res.status(200).json({
-                  message: "Return updated successfully.",
-                  return: updatedReturn,
-                });
-              } else {
-                res.status(404).json({
-                  message: "Return not found",
-                });
-              }
-            })
-            .catch((err) => {
-              res.status(500).json({
-                message: "Error updating the return.",
-                error: err,
-              });
-            });
+          prisma.$executeRaw`UPDATE edt_return SET status = 'PAID' WHERE id = ${parseInt(
+            session.metadata.edtReturnId
+          )}`;
 
           response.status(200).json({ received: true });
         } catch (err) {
