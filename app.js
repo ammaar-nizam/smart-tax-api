@@ -18,6 +18,7 @@ const giftReturnRoute = require('./routes/giftReturnRoute');
 const inheritanceReturnRoute = require('./routes/inheritanceReturnRoute');
 const paymentRoute = require('./routes/paymentRoute');
 const penaltyRoute = require('./routes/penaltyRoute');
+const paymentController = require('./controllers/paymentController')
 
 dotenv.config()
 
@@ -33,7 +34,6 @@ app.get('/', (req, res) => {
 
 // Middleware to parse raw request body for webhook
 app.use('/api/payments/webhook', bodyParser.raw({ type: 'application/json' }));
-const paymentController = require('./controllers/paymentController')
 app.post('/api/payments/webhook', paymentController.handleWebhook); // Mount webhook endpoint
 
 app.listen(PORT, ()=> {

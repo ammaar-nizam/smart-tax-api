@@ -53,7 +53,7 @@ async function handleWebhook(req, res) {
   let event;
   try {
     event = stripe.webhooks.constructEvent(
-      req.body,
+      raw({ type: 'application/json' })(req, res),
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
