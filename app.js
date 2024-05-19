@@ -30,6 +30,9 @@ app.get('/', (req, res) => {
     res.send("Server is working!")
 })
 
+const paymentController = require('./controllers/paymentController')
+app.post('/api/payments/webhook', paymentController.handleWebhook); // Mount webhook endpoint
+
 app.listen(PORT, ()=> {
     console.log(`Backend server is running on port ${PORT}!`);
 });
