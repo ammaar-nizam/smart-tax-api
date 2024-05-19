@@ -1,5 +1,6 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const prisma = require("../config/prismaConfig");
+const { raw } = require("body-parser");
 
 // Take to Checkout Page
 async function createCheckoutSession(req, res) {
