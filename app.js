@@ -1,6 +1,5 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const prisma = require("./config/prismaConfig");
-const prisma = new PrismaClient();
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
