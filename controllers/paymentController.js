@@ -42,6 +42,7 @@ async function createCheckoutSession(req, res) {
 
     res.json({ url: session.url });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: error.message });
   }
 }
