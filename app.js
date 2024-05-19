@@ -1,4 +1,4 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const express = require("express");
 const app = express();
@@ -24,11 +24,14 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-app.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  (request, response) => {
     let event = request.body;
     if (endpointSecret) {
       // Get the signature sent by Stripe
-      const signature = request.headers['stripe-signature'];
+      const signature = request.headers["stripe-signature"];
       try {
         event = stripe.webhooks.constructEvent(
           request.body,
@@ -40,23 +43,42 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
         return response.sendStatus(400);
       }
     }
-  
+
     // Handle the event
     switch (event.type) {
-      case 'payment_intent.succeeded':
+      case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
         console.log(`Payment of ${paymentIntent.amount} was successful!`);
         // Then define and call a method to handle the successful payment intent.
         // handlePaymentIntentSucceeded(paymentIntent);
         break;
+      case "checkout.session.completed":
+        const session = event.data.object;
+        console.log(`Payment of ${session.amount} was successful!`);
+        try {
+            prisma.eDTReturn.update({
+              where: { id: parseInt(session.metadata.edtReturnId) },
+              data: { status: "PAID" },
+            });
+      
+            res.status(200).json({ received: true });
+          } catch (err) {
+            console.log(err);
+            res.status(500).json({
+              message: "Error updating EDT Return status",
+              error: err,
+            });
+          }
+        break;
       default:
         // Unexpected event type
         console.log(`Unhandled event type ${event.type}.`);
     }
-  
+
     // Return a 200 response to acknowledge receipt of the event
     response.send();
-  });
+  }
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -83,5 +105,3 @@ app.use("/api/gift-returns", giftReturnRoute);
 app.use("/api/inheritance-returns", inheritanceReturnRoute);
 app.use("/api/payments", paymentRoute);
 app.use("/api/penalties", penaltyRoute);
-
-

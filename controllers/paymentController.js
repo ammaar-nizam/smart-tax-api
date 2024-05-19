@@ -49,41 +49,41 @@ async function createCheckoutSession(req, res) {
 }
 
 // Handle webhook event
-// async function handleWebhook(req, res) {
-//   const sig = req.headers["stripe-signature"];
+async function handleWebhook(req, res) {
+  const sig = req.headers["stripe-signature"];
 
-//   let event;
-//   try {
-//     event = stripe.webhooks.constructEvent(
-//       req.body,
-//       sig,
-//       process.env.STRIPE_WEBHOOK_SECRET
-//     );
-//   } catch (err) {
-//     return res.status(400).send(`Webhook Error: ${err.message}`);
-//   }
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
 
-//   if (event.type === "checkout.session.completed") {
-//     const session = event.data.object;
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
 
-//     try {
-//       await prisma.eDTReturn.update({
-//         where: { id: parseInt(session.metadata.edtReturnId) },
-//         data: { status: "Paid" },
-//       });
+    try {
+      await prisma.eDTReturn.update({
+        where: { id: parseInt(session.metadata.edtReturnId) },
+        data: { status: "Paid" },
+      });
 
-//       res.status(200).json({ received: true });
-//     } catch (err) {
-//       console.log(err);
-//       res.status(500).json({
-//         message: "Error updating EDT Return status",
-//         error: err,
-//       });
-//     }
-//   } else {
-//     res.status(400).json({ message: "Unhandled event type" });
-//   }
-// }
+      res.status(200).json({ received: true });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({
+        message: "Error updating EDT Return status",
+        error: err,
+      });
+    }
+  } else {
+    res.status(400).json({ message: "Unhandled event type" });
+  }
+}
 
 module.exports = {
   createCheckoutSession,
