@@ -1,5 +1,7 @@
 const prisma = require("../config/prismaConfig");
 const nodemailer = require("nodemailer");
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Initialize nodemailer transporter with Gmail
 const transporter = nodemailer.createTransport({
@@ -44,14 +46,14 @@ async function createFeedback(req, res) {
 
 // Function to send feedback email
 async function sendFeedbackEmail(feedback) {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to: process.env.EMAIL_USER,
+    from: process.env.EMAIL_USER,
     subject: `A new feedback from ${feedback.name}`,
     text: `${feedback.feedback}\n\nRating: ${feedback.rating}\n\nYou can contact the person who gave the feedback on ${feedback.email}.`,
   };
 
-  await transporter.sendMail(mailOptions);
+  await sgMail.send(msg);
 }
 
 // Get all feedbacks where status is PENDING
