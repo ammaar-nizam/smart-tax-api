@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Registering a feedback
-function createFeedback(req, res) {
+async function createFeedback(req, res) {
   const feedbackData = {
     name: req.body.name,
     email: req.body.email,
@@ -19,40 +19,39 @@ function createFeedback(req, res) {
     rating: req.body.rating,
   };
 
-  prisma.feedback
-    .create({
+  try {
+    const createdFeedback = await prisma.feedback.create({
       data: feedbackData,
-    })
-    .then((createdFeedback) => {
-      res.status(201).json({
-        message: "Feedback created successfully.",
-        feedback: createdFeedback,
-      });
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
-        subject: `A new feedback from ${createdFeedback.name}`,
-        text: `${createdFeedback.feedback}\n\nRating: ${createdFeedback.rating}\n\nYou can contact the person who gave the feedback on ${createdFeedback.email}.`,
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error("Error sending feedback:", error);
-          res.status(500).json({ message: "Failed to send feedback." });
-        } else {
-          res.status(200).json({
-            message: "Feedback sent.",
-          });
-        }
-      });
-    })
-    .catch((error) => {
-      console.error("Error creating feedback:", error);
-      res.status(500).json({
-        message: "Internal server error",
-        error: error,
-      });
     });
+
+    res.status(201).json({
+      message: "Feedback created successfully.",
+      feedback: createdFeedback,
+    });
+
+    // Sending email asynchronously
+    sendFeedbackEmail(createdFeedback).catch((error) => {
+      console.error("Error sending feedback:", error);
+    });
+  } catch (error) {
+    console.error("Error creating feedback:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error,
+    });
+  }
+}
+
+// Function to send feedback email
+async function sendFeedbackEmail(feedback) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: process.env.EMAIL_USER,
+    subject: `A new feedback from ${feedback.name}`,
+    text: `${feedback.feedback}\n\nRating: ${feedback.rating}\n\nYou can contact the person who gave the feedback on ${feedback.email}.`,
+  };
+
+  await transporter.sendMail(mailOptions);
 }
 
 // Get all feedbacks where status is PENDING
