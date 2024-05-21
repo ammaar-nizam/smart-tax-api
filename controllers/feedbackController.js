@@ -1,6 +1,6 @@
 const prisma = require("../config/prismaConfig");
 const nodemailer = require("nodemailer");
-const sgMail = require('@sendgrid/mail');
+const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Initialize nodemailer transporter with Gmail
@@ -46,36 +46,44 @@ async function createFeedback(req, res) {
 
 // Function to send feedback email
 async function sendFeedbackEmail(feedback) {
-  const msg = {
-    to: process.env.EMAIL_USER,
+  const mailOptions = {
     from: process.env.EMAIL_USER,
+    to: process.env.EMAIL_USER,
     subject: `A new feedback from ${feedback.name}`,
     text: `${feedback.feedback}\n\nRating: ${feedback.rating}\n\nYou can contact the person who gave the feedback on ${feedback.email}.`,
   };
 
-  await sgMail.send(msg);
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending feedback:", error);
+      res.status(500).json({ message: "Failed to send feedback." });
+    } else {
+      res.status(200).json({
+        message: "Feedback sent.",
+      });
+    }
+  });
 }
 
 // Get all feedbacks where status is PENDING
 function getAllPendingFeedbacks(req, res) {
-    prisma.feedback
-      .findMany({
-        where: {
-          status: "PENDING"
-        }
-      })
-      .then((feedbacks) => {
-        res.status(200).json(feedbacks);
-      })
-      .catch((error) => {
-        console.error("Error fetching pending feedbacks:", error);
-        res.status(500).json({
-          message: "Internal server error",
-          error: error,
-        });
+  prisma.feedback
+    .findMany({
+      where: {
+        status: "PENDING",
+      },
+    })
+    .then((feedbacks) => {
+      res.status(200).json(feedbacks);
+    })
+    .catch((error) => {
+      console.error("Error fetching pending feedbacks:", error);
+      res.status(500).json({
+        message: "Internal server error",
+        error: error,
       });
-  }
-  
+    });
+}
 
 // Get feedback by ID
 function getFeedbackById(req, res) {
@@ -107,48 +115,47 @@ function getFeedbackById(req, res) {
 
 // Update feedback by ID
 function updateFeedbackById(req, res) {
-    const { id } = req.params;
-    const { response, status } = req.body;
-  
-    prisma.feedback
-      .update({
-        where: {
-          id: parseInt(id),
-        },
-        data: {
-          response: response,
-          status: status,
-        },
-      })
-      .then((updatedFeedback) => {
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: updatedFeedback.email, // Use feedback.email from updated data
-          subject: `Feedback response from ${process.env.APPLICATION_NAME}`, // Add application name
-          text: `Your feedback has been responded to:\n\nResponse: ${response}`,
-        };
-  
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error("Error sending feedback response email:", error);
-            res.status(500).json({ message: "Failed to send response email." });
-          } else {
-            res.status(200).json({
-              message: "Feedback updated successfully. Response email sent.",
-              feedback: updatedFeedback,
-            });
-          }
-        });
-      })
-      .catch((error) => {
-        console.error("Error updating feedback:", error);
-        res.status(500).json({
-          message: "Internal server error",
-          error: error,
-        });
+  const { id } = req.params;
+  const { response, status } = req.body;
+
+  prisma.feedback
+    .update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        response: response,
+        status: status,
+      },
+    })
+    .then((updatedFeedback) => {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: updatedFeedback.email, // Use feedback.email from updated data
+        subject: `Feedback response from ${process.env.APPLICATION_NAME}`, // Add application name
+        text: `Your feedback has been responded to:\n\nResponse: ${response}`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending feedback response email:", error);
+          res.status(500).json({ message: "Failed to send response email." });
+        } else {
+          res.status(200).json({
+            message: "Feedback updated successfully. Response email sent.",
+            feedback: updatedFeedback,
+          });
+        }
       });
-  }
-  
+    })
+    .catch((error) => {
+      console.error("Error updating feedback:", error);
+      res.status(500).json({
+        message: "Internal server error",
+        error: error,
+      });
+    });
+}
 
 // Delete feedback by ID
 function deleteFeedbackById(req, res) {
